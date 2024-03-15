@@ -1,5 +1,10 @@
 from flask import Flask, request, render_template
+import sqlite3
+import datetime
+
 app = Flask(__name__)
+name_flag = 0
+name=""
 
 @app.route("/",methods=["GET","POST"])
 def index():
@@ -7,7 +12,17 @@ def index():
 
 @app.route("/main",methods=["GET","POST"])
 def main():
-    name = request.form.get("name")    
+    global name_flag,name
+    if name_flag == 0:
+        name = request.form.get("name") 
+        name_flag = 1
+        conn = sqlite3.connect("log.db")
+        c = conn.cursor()
+        timestamp = datetime.datetime.now()
+        c.execute("insert into employee (name,timestamp) values (?,?)", (name,timestamp))
+        conn.commit()
+        conn.close()
+        c.close()
     return(render_template("main.html",name=name))
 
 @app.route("/ethical_test",methods=["GET","POST"])
